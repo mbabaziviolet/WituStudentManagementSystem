@@ -20,6 +20,17 @@ def create_app():
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+
+    from backend.programs.routes import programs
+    
+ 
+    #registering blueprints    
+  
+    app.register_blueprint(programs)
+    
+
+
+
     # Initialize extensions
     # To use the application instances above, instantiate with an application:
     db.init_app(app)

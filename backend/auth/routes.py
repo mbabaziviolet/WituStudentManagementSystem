@@ -3,8 +3,8 @@ from flask import  jsonify, request, Blueprint
 from validate_email import validate_email
 from werkzeug.security import check_password_hash,generate_password_hash
 from flask_jwt_extended import  create_access_token
-from StackOverFlow.models.models import User
-from StackOverFlow.models.models import db
+from backend.students import User
+from backend.students import db
 
 
 auth = Blueprint('auth', __name__, url_prefix='/auth')

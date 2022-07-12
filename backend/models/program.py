@@ -1,11 +1,10 @@
 from datetime import date, datetime
-from email.policy import default
-from flask_sqlalchemy import SQLAlchemy
 from dataclasses import dataclass
 from backend import db
 
 
 @dataclass
+#inheritance or creating  a new model instance
 class Program(db.Model):
    id: int
    name: str
@@ -17,16 +16,14 @@ class Program(db.Model):
    created_at:datetime
    updated_at:datetime
 
-   __tablename__ = 'Programs'   
+   __tablename__ = 'programs'   
    id = db.Column(db.Integer, primary_key=True)
-   name = db.Column(db.String(80), nullable=False)
-   description = db.Column(db.Text(120), unique=True, nullable=True)
+   name = db.Column(db.String(255),unique=True, nullable=False)
+   description = db.Column(db.Text(120),  nullable=True)
    start_date = db.Column(db.Date(), nullable=False)
-   created_at = db.Column(db.DateTime, default=datetime.now())
-   start_date = db.Column(db.Date(), nullable=False)
+   duration = db.Column(db.String, nullable=False)
    end_date = db.Column(db.Date(), nullable=False)
    status = db.Column(db.Date(), nullable=False,default="Inprogress")
-   created_at = db.Column(db.DateTime, default=datetime.now())
    created_at = db.Column(db.DateTime, default=datetime.now())
    updated_at = db.Column(db.DateTime, onupdate=datetime.now())
    

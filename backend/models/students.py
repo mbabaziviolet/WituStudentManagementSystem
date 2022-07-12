@@ -1,4 +1,5 @@
 from datetime import datetime
+from email.policy import default
 from flask_sqlalchemy import SQLAlchemy
 from dataclasses import dataclass
 from backend import db
@@ -16,6 +17,7 @@ class Student(db.Model):
    guardian_contact:str
    image:str
    age:int
+   is_admitted:bool
    created_at:datetime
    updated_at:datetime
    __tablename__ = 'students'   
@@ -31,6 +33,7 @@ class Student(db.Model):
    guardian_contact=db.Column(db.String(120), unique=True, nullable=False)
    password = db.Column(db.Text(), nullable=False)
    image =db.Column(db.String(), nullable=True)
+   is_admitted =db.Column(db.Boolean(),default=False)
    created_at = db.Column(db.DateTime, default=datetime.now())
    updated_at = db.Column(db.DateTime, onupdate=datetime.now())
    

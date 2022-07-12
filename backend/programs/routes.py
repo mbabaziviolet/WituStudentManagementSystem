@@ -1,183 +1,158 @@
 from flask import  jsonify, request, Blueprint
 from flask_jwt_extended import jwt_required,get_jwt_identity
-from StackOverFlow.models.models import db
-from StackOverFlow.models.models import Answer, Question
+from backend import db
+from backend.models.program import Program
 
-questions = Blueprint('questions', __name__,url_prefix="/questions")
+programs = Blueprint('programs', __name__,url_prefix="/programs")
 
 
 
-#retrieving all questions 
-@questions.route("/", methods=['GET'])
-def all_questions():
+#retrieving all programs 
+@programs.route("/", methods=['GET'])
+def all_programs():
     #ensuring that a user has logged in
-    all_questions = Question.query.all()
-    return jsonify(all_questions),200
+    all_programs = Program.query.all()
+    return jsonify(all_programs),200
 
 
-#retrieving all questions for a user
-@questions.route("/users/<int:user_id>", methods=['GET'])
-@jwt_required()
-def all_user_questions(user_id):
-    #ensuring that a user has logged in
-    user_id= get_jwt_identity()
-    all_questions = Question.query.filter_by(id=user_id).all()
-    return jsonify(all_questions),200
 
-
-#retrieving single questions item
-@questions.route("/<int:questionId>", methods=['GET'])
-def single_question(questionId):
-    single_question = Question.query.filter_by(id=questionId).first()
+#retrieving a single program
+@programs.route("/<int:programId>", methods=['GET'])
+def single_program(programId):
+    program = Program.query.filter_by(id=programId).first()
     
-    #Question that does'nt exist
-    if not single_question:
-        return jsonify({'message': '  Question not found'}), 404
-    return jsonify(single_question),200
+    #Program that does'nt exist
+    if not program:
+        return jsonify({'message': '  Program not found'}), 404
+    return jsonify(program),200
 
 
-#retrieving single questions item for a user
-@questions.route("/<string:questionId>", methods=['GET'])
+#creating programs
+@programs.route("/", methods=["POST"])
 @jwt_required()
-def single_user_question(questionId):
-    current_user = get_jwt_identity()
-    single_question = Question.query.filter_by(user_id=current_user,id=questionId).first()
-    
-    #if a question doesnt exist
-    if not single_question:
-        return jsonify({'message': '  Question not found'}), 404
-    return jsonify(single_question),200 
-
-
-#creating questions
-@questions.route("/", methods=["POST"])
-@jwt_required()
-def new_questions():
+def new_programs():
     
     if request.method == "POST":
         
         user_id = get_jwt_identity()
-        title = request.json['title']
-        body = request.json['body']
-        tag = request.json['tag']
-       
-       
+        name = request.json['name']
+        description = request.json['description']
+        starting_date = request.json['starting_date']
+        end_date = request.json['end_date']
+        duration = request.json['duration']
+        status = request.json['stsatus']
+    
+        #program status: in_progress, closed
 
-       #empty fields
+       #empty fields for validations
       
-        if not title:
+        if not name:
                  
-          return jsonify({'error': 'Please provide a title for the question'}), 400 #bad request
+          return jsonify({'error': 'Program name is required'}), 400 #bad request
           
-        if not body:
-                return jsonify({'error': 'Please provide a body for the question'}), 400
-        #empty fields
-      
+        if not starting_date:
+            return jsonify({'error': 'Starting date is required'}), 400
 
-          
-        if not tag:
-                return jsonify({'error': 'Please add a tag for the question ie python '}), 400
+        if not end_date:
+            return jsonify({'error': 'Ending date is required'}), 400    
+       
+        if not duration:
+                return jsonify({'error': 'Duration field is required'}), 400
         
-        #checking if title exists
-        if Question.query.filter_by(title=title).first():
+        #checking if name exists
+        if Program.query.filter_by(name=name).first():
                 return jsonify({
-                'error': 'Question title exists'
+                'error': 'Program name already exists'
             }), 409 #conflicts
-        
-        #checking if body exists
-        if Question.query.filter_by(body=body).first():
-                return jsonify({
-                'error': 'Question body already exists'
-            }), 409
-        
+      
            
-
-        #inserting values into the questions_list
-        new_question = Question(title=title,body=body,user_id=user_id,tag=tag)
-        db.session.add(new_question)
+        #For valid data
+        #inserting values into the programs_list
+        new_program = Program(user_id=user_id,name=name,description=description,starting_date=starting_date,end_date=end_date,status=status)
+        db.session.add(new_program)
         db.session.commit()
         
          
   
-    return jsonify({'message':'new question posted','tag':tag,'title':title,'body':body,'user_id':user_id}),200
+    return jsonify({'message':'Added a new program','starting_date':starting_date,'name':name,'description':description,'user_id':user_id,'duration':duration,'status':status,'end_date':end_date}),200
     
 
 
  
 # #deleting a question
-@questions.route("/remove/<string:questionId>", methods=['DELETE'])
+@programs.route("/remove/<string:programId>", methods=['DELETE'])
 @jwt_required()
-def delete_questions(questionId):
+def delete_programs(programId):
     current_user = get_jwt_identity()
 
-    question = Question.query.filter_by(user_id=current_user, id=questionId).first()
+    program = Program.query.filter_by(user_id=current_user, id=programId).first()
 
-    if not question:
-        return jsonify({'message': 'Item not found'}), 404
+    if not program:
+        return jsonify({'message': 'program not found'}), 404
 
-    db.session.delete(question)
+    db.session.delete(program)
     db.session.commit()
 
     return jsonify({}), 204
 
+# #updating a program
+# @programs.route("/remove/<string:programId>", methods=['DELETE'])
+# @jwt_required()
+# def update_programs(programId):
+#     current_user = get_jwt_identity()
+
+#     program = Program.query.filter_by(user_id=current_user, id=programId).first()
+
+#     if request.method == "POST":
+        
+#         program.user_id = get_jwt_identity()
+#         program.name = request.json['name']
+#         program.description = request.json['description']
+#         program.starting_date = request.json['starting_date']
+#         program.end_date = request.json['end_date']
+#         program.duration = request.json['duration']
+#         program.status = request.json['status']
     
+#         #program status: in_progress, closed
 
+#        #empty fields for validations
+      
+#         if not program.name:
+                 
+#           return jsonify({'error': 'Program name is required'}), 400 #bad request
+          
+#         if not program.starting_date:
+#             return jsonify({'error': 'Starting date is required'}), 400
 
-#creating answers
-@questions.route("/<int:question_id>/answers", methods=["POST"])
-@jwt_required()
-def new_answers(question_id):
-    if request.method == "POST":
-        
-        question_id =  request.json['question_id']
-        user_id = get_jwt_identity()
-        body = request.json['body']
-        
-        if not body:
-            return jsonify({'error':'Please provide your content for the answer'}), 400
-        
-        if not question_id:
-            return jsonify({'error':'An id for the question being replied to is required'}), 400
-        
-        #checking if body exists
-        if Answer.query.filter_by(body=body).first():
-                return jsonify({
-                'error': 'This answer already exists'
-            }), 409
-        
-           
-
-        #inserting values into the questions_list
-        new_answer = Answer(question_id= int(question_id),body=body,user_id=user_id)
-        db.session.add(new_answer)
-        db.session.commit()
+#         if not program.end_date:
+#             return jsonify({'error': 'Ending date is required'}), 400    
        
+#         if not program.duration:
+#                 return jsonify({'error': 'Duration field is required'}), 400
+        
+#         #checking if name exists
+#         if Program.query.filter_by(name=name).first():
+#                 return jsonify({
+#                 'error': 'Program name already exists'
+#             }), 409 #conflicts
+      
+           
+#         #For valid data
+#         #updating values into the programs_list
+        
+#         db.session.add(program)
+#         db.session.commit()
+        
          
   
-    return jsonify({'message':'new answer posted','question_id':question_id,'body':body,'user_id':user_id}),200
+#     return jsonify({'message':'Added a new program','starting_date':starting_date,'name':name,'description':description,'user_id':user_id,'duration':duration,'status':status,'end_date':end_date}),200
     
 
-#Viewing an answer by id
-@questions.route("/<int:answer_id>/answers")
-@jwt_required()
-def single_answer(answer_id):
-    single_answer = Answer.query.filter_by(id=answer_id).first()
-  
-    return jsonify(single_answer),200
+#     db.session.delete(program)
+#     db.session.commit()
 
-#retrieving all answers for a specific user
-@questions.route("/answers/<int:user_id>")
-@jwt_required()
-def user_answers(user_id):
-    #ensuring that a user has logged in
-    user_id = get_jwt_identity()
-    answers = Answer.query.filter_by(user_id=user_id).first()
-    return jsonify(answers),200
+#     return jsonify({}), 204
+    
 
 
 
-#retrieving all answers
-@questions.route("/answers", methods=['GET'])
-def all_answers():
-    all_answers = Answer.query.all()
-    return jsonify(all_answers),200
