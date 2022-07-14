@@ -22,11 +22,17 @@ def create_app():
 
 
     from backend.programs.routes import programs
+    from backend.tutors.routes import tutors
+    from backend.admins.routes import admins
+    from backend.students.routes import students
     
  
     #registering blueprints    
   
     app.register_blueprint(programs)
+    app.register_blueprint(tutors)
+    app.register_blueprint(admins)
+    app.register_blueprint(students)
     
 
 
